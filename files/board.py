@@ -380,7 +380,7 @@ def getMove(player):
                     column = size + 1
                 attempted = column * size + row
                 break
-            except (ValueError, IndexError) as e:
+            except (ValueError, IndexError):
                 print("That is not how you select a spot to play")
         try:
             if isSpacePlayable(attempted):
@@ -423,7 +423,6 @@ def controlLogic():
         print("Good game, nobody won this time.")
 
     printBoardWithLabels()
-
 
 
 getBoardSize()
