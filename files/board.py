@@ -3,7 +3,9 @@ import math
 minBoardSize = 1
 maxBoardSize = 10
 playerOneMarker = 'X'
-playerTwoMarker = '5'
+playerOneName = 'Player One'
+playerTwoMarker = 'O'
+playerTwoName = 'Player Two'
 debug = False
 
 size = 0
@@ -21,7 +23,7 @@ def setBoard(board_size):
     global boardValues
 
     # Main Board
-    for i in range(int(math.pow(board_size, 2))):
+    for i in range(int(math.pow(board_size, 2) - 1)):
         boardValues.append(' ')
 
     # Top Edges
@@ -59,6 +61,16 @@ def setBoard(board_size):
         print("Wow, that is a complicated board.")
     elif size == 1:
         print("If you need a computer to help you play this game, you don't need to have a computer.")
+
+
+def setPlayerOne(name):
+    global playerOneName
+    playerOneName = name
+
+
+def setPlayerTwo(name):
+    global playerTwoName
+    playerTwoName = name
 
 
 # Gets the size of the board from the user.
@@ -114,6 +126,16 @@ def printBoardWithLabels():
                 break
             print("----", end="")
         print()
+
+
+# Converts the board to a string.
+def boardToString():
+    temp = ""
+    for i in range(int(math.pow(size, 2))):
+        temp += boardValues[i]
+        if i != int(math.pow(size, 2) - 1):
+            temp += ','
+    return temp
 
 
 def checkUpperLeft(start):
@@ -364,6 +386,13 @@ def isSpacePlayable(spot):
     return True
 
 
+def updateBoard(newBoard):
+    global boardValues
+    boardValues = newBoard.split(',')
+    # print(boardValues)
+    singleSideLogic()
+
+
 # Asks the player where they would like to move. If the spot is occupied, it makes them choose a different space.
 # It will return the grid space they wanted to play in.
 def getMove(player):
@@ -393,15 +422,16 @@ def getMove(player):
             printBoardWithLabels()
 
 
+# Logic used when running the game locally
 def controlLogic():
     activePlayer = 1
     winner = False
 
     while True:
         if activePlayer % 2 == 0:
-            boardValues[getMove("Player 2")] = playerTwoMarker
+            boardValues[getMove(playerTwoName)] = playerTwoMarker
         else:
-            boardValues[getMove("Player 1")] = playerOneMarker
+            boardValues[getMove(playerOneName)] = playerOneMarker
         activePlayer += 1
         printBoardWithLabels()
         if isBoardSolved():
@@ -414,9 +444,9 @@ def controlLogic():
     if winner:
         activePlayer -= 1
         if activePlayer % 2 == 0:
-            print("Player 2 wins", end='')
+            print(playerTwoName + " wins", end='')
         else:
-            print("Player 1 wins", end='')
+            print(playerOneName + " wins", end='')
         print(" after " + str(math.ceil(activePlayer / 2)) + " moves.")
         print("A total of " + str(activePlayer) + " moves were made.")
     else:
@@ -425,9 +455,44 @@ def controlLogic():
     printBoardWithLabels()
 
 
-getBoardSize()
-print("Selections are made in the form of row column. To make a move in the top right corner, you would enter "
-      "\'0 " + str(size - 1) + "\', without quotes.")
-print("Player One will be using \'" + playerOneMarker + "\'; Player Two will be using \'" + playerTwoMarker + "\'\n")
-printBoardWithLabels()
-controlLogic()
+# Used for SingleSideLogic
+currentPlayer = 1
+
+
+# Logic for server use
+def singleSideLogic():
+    global currentPlayer
+
+    if not isBoardSolved() or not isBoardFull():
+        printBoardWithLabels()
+        if currentPlayer % 2 == 0:
+            boardValues[getMove(playerTwoName)] = playerTwoMarker
+        else:
+            boardValues[getMove(playerOneName)] = playerOneMarker
+        currentPlayer += 2
+        printBoardWithLabels()
+
+    if isBoardSolved():
+        print("\n" * 100)
+        currentPlayer -= 2
+        if currentPlayer % 2 == 0:
+            print(playerTwoName + " wins", end='')
+        else:
+            print(playerOneName + " wins", end='')
+        print(" after " + str(math.ceil(currentPlayer / 2)) + " moves.")
+        printBoardWithoutLabels()
+        print("A total of " + str(currentPlayer) + " moves were made.")
+
+    elif isBoardFull():
+        print("Good game, nobody won this time.")
+
+    else:
+        print("Waiting on opponent...")
+
+
+def instructions():
+    temp = "Selections are made in the form of row column. To make a move in the top right corner, you would enter " + \
+        "\'0 " + str(size - 1) + "\', without quotes.\n"
+    temp += playerOneName + " will be using \'" + playerOneMarker + "\'; " + playerTwoName + " will be using \'" + \
+        playerTwoMarker + "\'\n"
+    return temp
